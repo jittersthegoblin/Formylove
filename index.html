@@ -64,7 +64,11 @@
         <h1 id="game-title">ANTS<br><span class="title-vs">VS.</span> ZOMBIES</h1>
         <p class="subtitle">Raise an ant army, tend your aphids, harvest Honeydew, and keep the undead away from humanity.</p>
         <div class="hero-art" aria-hidden="true">
-          <span class="hero-ant">🐜</span><span class="hero-ant">🐜</span><span class="versus">VS</span><span>🧟</span><span>🧟‍♂️</span>
+          <img class="hero-sprite" src="assets/sprites/ants/worker_ant.png" alt="" draggable="false">
+          <img class="hero-sprite" src="assets/sprites/ants/major_soldier_ant.png" alt="" draggable="false">
+          <span class="versus">VS</span>
+          <img class="hero-sprite" src="assets/sprites/zombies/shambler_zombie.png" alt="" draggable="false">
+          <img class="hero-sprite" src="assets/sprites/zombies/tinhead_zombie.png" alt="" draggable="false">
         </div>
         <button id="storyBtn" class="primary" type="button">Defend the Humans</button>
         <button id="startBtn" type="button" hidden aria-hidden="true">Start game</button>
@@ -143,6 +147,7 @@
   </main>
 
   <script src="game.js"></script>
+  <script src="sprite-art.js"></script>
   <script>
     (() => {
       const storyBtn = document.getElementById('storyBtn');
