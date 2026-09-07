@@ -71,5 +71,15 @@
   </main>
 
   <script src="game.js"></script>
+  <script>
+    // Mobile tap fix: the current game renderer refreshes nectar buttons very often.
+    // Collect on pointer-down so Samsung/Android taps register before a button is refreshed.
+    document.getElementById('drops').addEventListener('pointerdown', function (event) {
+      const drop = event.target.closest('.nectar-drop');
+      if (!drop) return;
+      event.preventDefault();
+      drop.click();
+    }, { passive: false });
+  </script>
 </body>
 </html>
