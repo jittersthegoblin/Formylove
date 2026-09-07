@@ -4,13 +4,14 @@
   const ROWS = 5;
   const COLS = 8;
   const FINAL_WAVE = 6;
+
   const menu = document.getElementById('menu');
   const game = document.getElementById('game');
   const board = document.getElementById('board');
   const entityLayer = document.getElementById('entities');
   const dropLayer = document.getElementById('drops');
   const defenderBar = document.getElementById('defenderBar');
-  const nectarValue = document.getElementById('nectarValue');
+  const honeydewValue = document.getElementById('nectarValue');
   const heartValue = document.getElementById('heartValue');
   const waveText = document.getElementById('waveText');
   const waveFill = document.getElementById('waveFill');
@@ -20,30 +21,84 @@
   const endOverlay = document.getElementById('endOverlay');
   const pauseBtn = document.getElementById('pauseBtn');
 
-  const BUGS = {
-    butterfly: { name:'Butterfly', icon:'🦋', cost:50, hp:90, cooldown:4.5, role:'Makes nectar', kind:'generator', rate:7.0, amount:35 },
-    bee:       { name:'Bee', icon:'🐝', cost:100, hp:110, cooldown:4.0, role:'Fast shooter', kind:'shooter', rate:1.05, damage:22, shot:'sting' },
-    ladybug:   { name:'Ladybug', icon:'🐞', cost:75, hp:430, cooldown:7.0, role:'Tough blocker', kind:'tank' },
-    spider:    { name:'Spider', icon:'🕷️', cost:125, hp:115, cooldown:6.5, role:'Webs & slows', kind:'shooter', rate:1.65, damage:12, slow:0.52, slowTime:3.0, shot:'web' },
-    beetle:    { name:'Bomb Beetle', icon:'🪲', cost:175, hp:145, cooldown:8.5, role:'Splash blast', kind:'shooter', rate:2.25, damage:40, splash:0.75, shot:'blast' },
-    hopper:    { name:'Grasshopper', icon:'🦗', cost:150, hp:155, cooldown:6.0, role:'Kickback melee', kind:'melee', rate:1.8, damage:52, knockback:0.6 }
+  const UNITS = {
+    aphids: {
+      name: 'Aphid Herd', cost: 50, hp: 120, cooldown: 4.5,
+      role: 'Produces Honeydew', kind: 'generator', rate: 6.6, amount: 35
+    },
+    woodant: {
+      name: 'Wood Ant', cost: 85, hp: 115, cooldown: 3.8,
+      role: 'Sprays formic acid', kind: 'shooter', rate: 1.08, damage: 22, shot: 'acid'
+    },
+    major: {
+      name: 'Major Soldier', cost: 100, hp: 470, cooldown: 7.0,
+      role: 'Heavy colony guard', kind: 'tank'
+    },
+    weaver: {
+      name: 'Weaver Ant', cost: 125, hp: 120, cooldown: 6.2,
+      role: 'Sticky slowing shot', kind: 'shooter', rate: 1.65, damage: 13,
+      slow: 0.5, slowTime: 3.2, shot: 'silk'
+    },
+    fireant: {
+      name: 'Fire Ant', cost: 175, hp: 145, cooldown: 8.3,
+      role: 'Venom splash', kind: 'shooter', rate: 2.15, damage: 42,
+      splash: 0.78, shot: 'venom'
+    },
+    trapjaw: {
+      name: 'Trap-jaw Ant', cost: 150, hp: 165, cooldown: 6.0,
+      role: 'Snaps zombies backward', kind: 'melee', rate: 1.75,
+      damage: 54, knockback: 0.62
+    }
   };
 
   const ZOMBIES = {
-    shambler: { name:'Shambler', icon:'🧟', hp:110, speed:0.125, damage:24, rate:1.15, reward:12 },
-    tinhead:  { name:'Tinhead', icon:'🧟‍♂️', hp:245, speed:0.09, damage:28, rate:1.25, reward:22 },
-    runner:   { name:'Runner', icon:'🧟‍♀️', hp:82, speed:0.19, damage:18, rate:0.95, reward:14 },
-    brute:    { name:'Compost Brute', icon:'🧟', hp:390, speed:0.068, damage:42, rate:1.4, reward:35 }
+    shambler: { name: 'Shambler', icon: '🧟', hp: 110, speed: 0.125, damage: 24, rate: 1.15 },
+    runner:   { name: 'Runner', icon: '🧟‍♀️', hp: 82, speed: 0.19, damage: 18, rate: 0.95 },
+    tinhead:  { name: 'Tinhead', icon: '🧟‍♂️', hp: 245, speed: 0.09, damage: 28, rate: 1.25 },
+    brute:    { name: 'Compost Brute', icon: '🧟', hp: 390, speed: 0.068, damage: 42, rate: 1.4 }
   };
 
   const state = {
-    running:false, paused:false, ended:false, nectar:175, hearts:3,
-    wave:1, waveElapsed:0, waveDuration:24, waveSpawned:0, waveQuota:7,
-    betweenWaves:0, defenders:[], zombies:[], drops:[], selected:null,
-    cooldowns:{}, lastTime:0, ambientDropTimer:4, id:1, toastTimer:0
+    running: false,
+    paused: false,
+    ended: false,
+    honeydew: 175,
+    hearts: 3,
+    wave: 1,
+    waveElapsed: 0,
+    waveDuration: 24,
+    waveSpawned: 0,
+    waveQuota: 7,
+    betweenWaves: 0,
+    defenders: [],
+    zombies: [],
+    drops: [],
+    selected: null,
+    cooldowns: {},
+    lastTime: 0,
+    wildAphidTimer: 5.5,
+    id: 1,
+    toastTimer: 0
   };
 
   let raf = 0;
+
+  function antSprite(type, compact = false) {
+    if (type === 'aphids') {
+      return `<span class="aphid-herd${compact ? ' compact' : ''}" aria-hidden="true">
+        <span class="aphid-leaf"></span>
+        <span class="aphid a1"></span><span class="aphid a2"></span><span class="aphid a3"></span>
+        <span class="dew-bead"></span>
+      </span>`;
+    }
+
+    return `<span class="ant-sprite ant-${type}${compact ? ' compact' : ''}" aria-hidden="true">
+      <span class="ant-leg l1"></span><span class="ant-leg l2"></span><span class="ant-leg l3"></span>
+      <span class="ant-leg r1"></span><span class="ant-leg r2"></span><span class="ant-leg r3"></span>
+      <span class="ant-abdomen"></span><span class="ant-thorax"></span><span class="ant-head"></span>
+      <span class="ant-mandible m1"></span><span class="ant-mandible m2"></span>
+    </span>`;
+  }
 
   function makeGrid() {
     board.innerHTML = '';
@@ -52,10 +107,10 @@
         const cell = document.createElement('button');
         cell.type = 'button';
         cell.className = 'cell';
-        cell.dataset.row = r;
-        cell.dataset.col = c;
-        cell.setAttribute('role','gridcell');
-        cell.setAttribute('aria-label', `Garden row ${r+1}, column ${c+1}`);
+        cell.dataset.row = String(r);
+        cell.dataset.col = String(c);
+        cell.setAttribute('role', 'gridcell');
+        cell.setAttribute('aria-label', `Garden row ${r + 1}, column ${c + 1}`);
         cell.addEventListener('click', onCellTap);
         board.appendChild(cell);
       }
@@ -64,40 +119,68 @@
 
   function makeCards() {
     defenderBar.innerHTML = '';
-    Object.entries(BUGS).forEach(([key, bug]) => {
+    Object.entries(UNITS).forEach(([key, unit]) => {
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'bug-card';
+      btn.className = 'bug-card ant-card';
       btn.dataset.bug = key;
-      btn.innerHTML = `<div class="top"><span class="bug-icon">${bug.icon}</span><span class="cost">🍯 ${bug.cost}</span></div><div class="name">${bug.name}</div><div class="role">${bug.role}</div><div class="cooldown"></div>`;
-      btn.addEventListener('click', () => selectBug(key));
+      btn.innerHTML = `
+        <div class="top">
+          <span class="bug-icon">${antSprite(key, true)}</span>
+          <span class="cost"><span class="dew-icon mini" aria-hidden="true"></span>${unit.cost}</span>
+        </div>
+        <div class="name">${unit.name}</div>
+        <div class="role">${unit.role}</div>
+        <div class="cooldown"></div>`;
+      btn.addEventListener('click', () => selectUnit(key));
       defenderBar.appendChild(btn);
     });
   }
 
   function resetGame() {
     Object.assign(state, {
-      running:true, paused:false, ended:false, nectar:175, hearts:3,
-      wave:1, waveElapsed:0, waveDuration:24, waveSpawned:0,
-      waveQuota:quotaForWave(1), betweenWaves:1.3, defenders:[], zombies:[],
-      drops:[], selected:null, cooldowns:{}, ambientDropTimer:4,
-      lastTime:performance.now(), id:1
+      running: true,
+      paused: false,
+      ended: false,
+      honeydew: 175,
+      hearts: 3,
+      wave: 1,
+      waveElapsed: 0,
+      waveDuration: 24,
+      waveSpawned: 0,
+      waveQuota: quotaForWave(1),
+      betweenWaves: 1.3,
+      defenders: [],
+      zombies: [],
+      drops: [],
+      selected: null,
+      cooldowns: {},
+      wildAphidTimer: 5.5,
+      lastTime: performance.now(),
+      id: 1
     });
+
     entityLayer.innerHTML = '';
     dropLayer.innerHTML = '';
     endOverlay.classList.remove('show');
     pauseOverlay.classList.remove('show');
-    endOverlay.setAttribute('aria-hidden','true');
-    pauseOverlay.setAttribute('aria-hidden','true');
-    statusText.textContent = 'Choose a bug, then tap a garden square.';
+    endOverlay.setAttribute('aria-hidden', 'true');
+    pauseOverlay.setAttribute('aria-hidden', 'true');
+    pauseBtn.textContent = '⏸️';
+    statusText.textContent = 'Choose an ant, then tap a garden square.';
     updateUI();
     updateCardStates();
     cancelAnimationFrame(raf);
     raf = requestAnimationFrame(loop);
   }
 
-  function quotaForWave(w) { return 5 + w * 2; }
-  function durationForWave(w) { return Math.max(18, 25 - w * 0.7); }
+  function quotaForWave(wave) {
+    return 5 + wave * 2;
+  }
+
+  function durationForWave(wave) {
+    return Math.max(18, 25 - wave * 0.7);
+  }
 
   function startGame() {
     menu.classList.remove('active');
@@ -105,37 +188,61 @@
     resetGame();
   }
 
-  function selectBug(key) {
+  function selectUnit(key) {
     if (!state.running || state.paused || state.ended) return;
-    const bug = BUGS[key];
-    if ((state.cooldowns[key] || 0) > 0) { showToast(`${bug.name} is catching its breath.`); return; }
-    if (state.nectar < bug.cost) { showToast(`Need ${bug.cost - state.nectar} more nectar.`); return; }
+    const unit = UNITS[key];
+    if ((state.cooldowns[key] || 0) > 0) {
+      showToast(`${unit.name} is regrouping.`);
+      return;
+    }
+    if (state.honeydew < unit.cost) {
+      showToast(`Need ${unit.cost - state.honeydew} more Honeydew.`);
+      return;
+    }
+
     state.selected = state.selected === key ? null : key;
     updateCardStates();
-    document.querySelectorAll('.cell').forEach(cell => cell.classList.toggle('placeable', !!state.selected));
-    if (state.selected) statusText.textContent = `${bug.icon} ${bug.name} selected — tap an empty square.`;
+    document.querySelectorAll('.cell').forEach(cell => cell.classList.toggle('placeable', Boolean(state.selected)));
+    statusText.textContent = state.selected
+      ? `${unit.name} selected — tap an empty square.`
+      : 'Choose an ant, then tap a garden square.';
   }
 
-  function onCellTap(e) {
+  function onCellTap(event) {
     if (!state.running || state.paused || state.ended || !state.selected) return;
-    const row = Number(e.currentTarget.dataset.row);
-    const col = Number(e.currentTarget.dataset.col);
-    if (col === 0) { showToast('Keep the first column clear for the garden gate.'); return; }
-    if (state.defenders.some(d => d.row === row && d.col === col && d.hp > 0)) { showToast('That patch is already occupied.'); return; }
+
+    const row = Number(event.currentTarget.dataset.row);
+    const col = Number(event.currentTarget.dataset.col);
+    if (col === 0) {
+      showToast('Keep the first column clear for the colony gate.');
+      return;
+    }
+    if (state.defenders.some(defender => defender.row === row && defender.col === col && defender.hp > 0)) {
+      showToast('That patch is already occupied.');
+      return;
+    }
+
     const key = state.selected;
-    const bug = BUGS[key];
-    if (state.nectar < bug.cost || (state.cooldowns[key] || 0) > 0) return;
-    state.nectar -= bug.cost;
-    state.cooldowns[key] = bug.cooldown;
+    const unit = UNITS[key];
+    if (state.honeydew < unit.cost || (state.cooldowns[key] || 0) > 0) return;
+
+    state.honeydew -= unit.cost;
+    state.cooldowns[key] = unit.cooldown;
     state.defenders.push({
-      id:state.id++, type:key, row, col, hp:bug.hp, maxHp:bug.hp,
-      attackTimer:Math.random() * 0.25,
-      genTimer:bug.kind === 'generator' ? bug.rate * 0.55 : 0
+      id: state.id++,
+      type: key,
+      row,
+      col,
+      hp: unit.hp,
+      maxHp: unit.hp,
+      attackTimer: Math.random() * 0.25,
+      genTimer: unit.kind === 'generator' ? unit.rate * 0.5 : 0
     });
-    tone(360, .05);
+
+    tone(360, 0.05);
     state.selected = null;
     document.querySelectorAll('.cell').forEach(cell => cell.classList.remove('placeable'));
-    statusText.textContent = `${bug.icon} ${bug.name} deployed.`;
+    statusText.textContent = `${unit.name} deployed.`;
     updateUI();
     updateCardStates();
     render();
@@ -146,25 +253,45 @@
     if (state.wave >= 2) pool.push('runner');
     if (state.wave >= 3) pool.push('tinhead');
     if (state.wave >= 5) pool.push('brute');
-    const weighted = pool.concat(state.wave >= 4 ? ['shambler','tinhead'] : ['shambler']);
+    const weighted = pool.concat(state.wave >= 4 ? ['shambler', 'tinhead'] : ['shambler']);
     const type = weighted[Math.floor(Math.random() * weighted.length)];
-    const z = ZOMBIES[type];
-    state.zombies.push({ id:state.id++, type, row:Math.floor(Math.random()*ROWS), x:8.35, hp:z.hp, maxHp:z.hp, attackTimer:0, slowFactor:1, slowTimer:0 });
-    state.waveSpawned++;
+    const zombie = ZOMBIES[type];
+
+    state.zombies.push({
+      id: state.id++,
+      type,
+      row: Math.floor(Math.random() * ROWS),
+      x: 8.35,
+      hp: zombie.hp,
+      maxHp: zombie.hp,
+      attackTimer: 0,
+      slowFactor: 1,
+      slowTimer: 0
+    });
+    state.waveSpawned += 1;
   }
 
-  function spawnNectar(xPct, yPct, amount=25) {
-    state.drops.push({ id:state.id++, x:xPct, y:yPct, amount, life:8 });
+  function spawnHoneydew(xPct, yPct, amount = 25, source = 'aphid') {
+    state.drops.push({
+      id: state.id++,
+      x: Math.max(7, Math.min(93, xPct)),
+      y: Math.max(9, Math.min(91, yPct)),
+      amount,
+      source,
+      life: 9
+    });
     renderDrops();
   }
 
   function collectDrop(id) {
-    const i = state.drops.findIndex(d => d.id === id);
-    if (i < 0) return;
-    const drop = state.drops[i];
-    state.nectar += drop.amount;
-    state.drops.splice(i,1);
-    tone(620,.04);
+    if (!state.running || state.paused || state.ended) return;
+    const index = state.drops.findIndex(drop => drop.id === id);
+    if (index < 0) return;
+
+    const drop = state.drops[index];
+    state.honeydew += drop.amount;
+    state.drops.splice(index, 1);
+    tone(620, 0.04);
     updateUI();
     updateCardStates();
     renderDrops();
@@ -173,158 +300,182 @@
   function update(dt) {
     if (!state.running || state.paused || state.ended) return;
 
-    Object.keys(state.cooldowns).forEach(k => state.cooldowns[k] = Math.max(0, state.cooldowns[k] - dt));
-    state.ambientDropTimer -= dt;
-    if (state.ambientDropTimer <= 0) {
-      spawnNectar(13 + Math.random()*77, 12 + Math.random()*72, 25);
-      state.ambientDropTimer = 6.5 + Math.random()*2.5;
+    Object.keys(state.cooldowns).forEach(key => {
+      state.cooldowns[key] = Math.max(0, state.cooldowns[key] - dt);
+    });
+
+    state.wildAphidTimer -= dt;
+    if (state.wildAphidTimer <= 0) {
+      spawnHoneydew(10 + Math.random() * 26, 12 + Math.random() * 74, 20, 'wild');
+      state.wildAphidTimer = 7.5 + Math.random() * 2.2;
     }
 
-    state.drops.forEach(d => d.life -= dt);
-    state.drops = state.drops.filter(d => d.life > 0);
+    state.drops.forEach(drop => { drop.life -= dt; });
+    state.drops = state.drops.filter(drop => drop.life > 0);
 
     if (state.betweenWaves > 0) {
       state.betweenWaves -= dt;
     } else {
       state.waveElapsed += dt;
       const spawnEvery = state.waveDuration / state.waveQuota;
-      if (state.waveSpawned < state.waveQuota && state.waveElapsed >= state.waveSpawned * spawnEvery) spawnZombie();
+      if (state.waveSpawned < state.waveQuota && state.waveElapsed >= state.waveSpawned * spawnEvery) {
+        spawnZombie();
+      }
     }
 
-    for (const d of state.defenders) {
-      if (d.hp <= 0) continue;
-      const bug = BUGS[d.type];
-      if (bug.kind === 'generator') {
-        d.genTimer -= dt;
-        if (d.genTimer <= 0) {
-          spawnNectar(((d.col + .5) / COLS) * 100, ((d.row + .5) / ROWS) * 100, bug.amount);
-          d.genTimer = bug.rate;
+    for (const defender of state.defenders) {
+      if (defender.hp <= 0) continue;
+      const unit = UNITS[defender.type];
+
+      if (unit.kind === 'generator') {
+        defender.genTimer -= dt;
+        if (defender.genTimer <= 0) {
+          spawnHoneydew(
+            ((defender.col + 0.5) / COLS) * 100,
+            ((defender.row + 0.5) / ROWS) * 100,
+            unit.amount,
+            'aphid'
+          );
+          defender.genTimer = unit.rate;
         }
         continue;
       }
 
-      d.attackTimer -= dt;
-      const candidates = state.zombies.filter(z => z.hp > 0 && z.row === d.row && z.x > d.col + .25).sort((a,b) => a.x - b.x);
-      const target = candidates[0];
-      if (!target || d.attackTimer > 0) continue;
+      defender.attackTimer -= dt;
+      const targets = state.zombies
+        .filter(zombie => zombie.hp > 0 && zombie.row === defender.row && zombie.x > defender.col + 0.25)
+        .sort((a, b) => a.x - b.x);
+      const target = targets[0];
+      if (!target || defender.attackTimer > 0) continue;
 
-      if (bug.kind === 'melee') {
-        if (target.x - d.col <= 1.15) {
-          hitZombie(target, bug.damage);
-          target.x = Math.min(8.25, target.x + bug.knockback);
-          d.attackTimer = bug.rate;
-          flashProjectile(d, target, 'blast', .18);
-          tone(190,.035);
+      if (unit.kind === 'melee') {
+        if (target.x - defender.col <= 1.15) {
+          hitZombie(target, unit.damage);
+          target.x = Math.min(8.25, target.x + unit.knockback);
+          defender.attackTimer = unit.rate;
+          flashProjectile(defender, target, 'snap', 0.16);
+          tone(190, 0.035);
         }
       } else {
-        hitZombie(target, bug.damage);
-        if (bug.slow) { target.slowFactor = bug.slow; target.slowTimer = bug.slowTime; }
-        if (bug.splash) {
+        hitZombie(target, unit.damage);
+        if (unit.slow) {
+          target.slowFactor = unit.slow;
+          target.slowTimer = unit.slowTime;
+        }
+        if (unit.splash) {
           state.zombies.forEach(other => {
-            if (other.id !== target.id && other.hp > 0 && other.row === target.row && Math.abs(other.x - target.x) <= bug.splash) hitZombie(other, Math.round(bug.damage * .55));
+            if (other.id !== target.id && other.hp > 0 && other.row === target.row && Math.abs(other.x - target.x) <= unit.splash) {
+              hitZombie(other, Math.round(unit.damage * 0.55));
+            }
           });
         }
-        d.attackTimer = bug.rate;
-        flashProjectile(d, target, bug.shot, .22);
-        tone(bug.shot === 'web' ? 420 : bug.shot === 'blast' ? 210 : 520, .025);
+        defender.attackTimer = unit.rate;
+        flashProjectile(defender, target, unit.shot, 0.22);
+        tone(unit.shot === 'silk' ? 420 : unit.shot === 'venom' ? 210 : 520, 0.025);
       }
     }
 
-    for (const z of state.zombies) {
-      if (z.hp <= 0) continue;
-      const info = ZOMBIES[z.type];
-      z.attackTimer -= dt;
-      if (z.slowTimer > 0) {
-        z.slowTimer -= dt;
-        if (z.slowTimer <= 0) z.slowFactor = 1;
+    for (const zombie of state.zombies) {
+      if (zombie.hp <= 0) continue;
+      const info = ZOMBIES[zombie.type];
+      zombie.attackTimer -= dt;
+
+      if (zombie.slowTimer > 0) {
+        zombie.slowTimer -= dt;
+        if (zombie.slowTimer <= 0) zombie.slowFactor = 1;
       }
-      const blocker = state.defenders.filter(d => d.hp > 0 && d.row === z.row && d.col < z.x && z.x - d.col < .62).sort((a,b) => b.col - a.col)[0];
+
+      const blocker = state.defenders
+        .filter(defender => defender.hp > 0 && defender.row === zombie.row && defender.col < zombie.x && zombie.x - defender.col < 0.62)
+        .sort((a, b) => b.col - a.col)[0];
+
       if (blocker) {
-        if (z.attackTimer <= 0) {
+        if (zombie.attackTimer <= 0) {
           blocker.hp -= info.damage;
-          z.attackTimer = info.rate;
-          tone(120,.025);
+          zombie.attackTimer = info.rate;
+          tone(120, 0.025);
         }
       } else {
-        z.x -= info.speed * z.slowFactor * dt;
-        if (z.x <= .22) {
-          z.hp = 0;
-          state.hearts--;
-          showToast('A zombie slipped through the gate!');
-          tone(90,.16);
+        zombie.x -= info.speed * zombie.slowFactor * dt;
+        if (zombie.x <= 0.22) {
+          zombie.hp = 0;
+          state.hearts -= 1;
+          showToast('A zombie reached the colony gate!');
+          tone(90, 0.16);
           if (state.hearts <= 0) endGame(false);
         }
       }
     }
 
-    for (const z of state.zombies) {
-      if (z.hp <= 0 && !z.rewarded && z.x > .22) {
-        z.rewarded = true;
-        state.nectar += ZOMBIES[z.type].reward;
-      }
-    }
-    state.zombies = state.zombies.filter(z => z.hp > 0);
-    state.defenders = state.defenders.filter(d => d.hp > 0);
+    state.zombies = state.zombies.filter(zombie => zombie.hp > 0);
+    state.defenders = state.defenders.filter(defender => defender.hp > 0);
 
     if (state.waveSpawned >= state.waveQuota && state.zombies.length === 0 && state.betweenWaves <= 0) {
       if (state.wave >= FINAL_WAVE) {
         endGame(true);
       } else {
-        state.wave++;
+        state.wave += 1;
         state.waveElapsed = 0;
         state.waveSpawned = 0;
         state.waveDuration = durationForWave(state.wave);
         state.waveQuota = quotaForWave(state.wave);
-        state.betweenWaves = 3.0;
-        state.nectar += 40;
-        statusText.textContent = `Wave ${state.wave} incoming — bonus nectar +40.`;
+        state.betweenWaves = 3;
+        state.honeydew += 35;
+        statusText.textContent = `Wave ${state.wave} incoming — aphid harvest +35 Honeydew.`;
         showToast(`🌙 Wave ${state.wave} incoming!`);
-        tone(700,.08);
+        tone(700, 0.08);
       }
     }
   }
 
-  function hitZombie(z, damage) { z.hp -= damage; }
+  function hitZombie(zombie, damage) {
+    zombie.hp -= damage;
+  }
 
-  function flashProjectile(d, z, kind, duration) {
-    const p = document.createElement('div');
-    p.className = `projectile ${kind === 'web' ? 'web' : kind === 'blast' ? 'blast' : ''}`;
-    const sx = ((d.col + .62) / COLS) * 100;
-    const sy = ((d.row + .5) / ROWS) * 100;
-    const tx = (z.x / COLS) * 100;
-    p.style.left = sx + '%';
-    p.style.top = sy + '%';
-    entityLayer.appendChild(p);
+  function flashProjectile(defender, zombie, kind, duration) {
+    const projectile = document.createElement('div');
+    projectile.className = `projectile ${kind}`;
+    const startX = ((defender.col + 0.62) / COLS) * 100;
+    const startY = ((defender.row + 0.5) / ROWS) * 100;
+    const targetX = (zombie.x / COLS) * 100;
+    projectile.style.left = `${startX}%`;
+    projectile.style.top = `${startY}%`;
+    entityLayer.appendChild(projectile);
+
     requestAnimationFrame(() => {
-      p.style.transition = `left ${duration}s linear, transform ${duration}s ease`;
-      p.style.left = tx + '%';
-      if (kind === 'blast') p.style.transform = 'scale(2.1)';
+      projectile.style.transition = `left ${duration}s linear, transform ${duration}s ease`;
+      projectile.style.left = `${targetX}%`;
+      if (kind === 'venom' || kind === 'snap') projectile.style.transform = 'scale(2.05)';
     });
-    setTimeout(() => p.remove(), duration * 1000 + 60);
+
+    setTimeout(() => projectile.remove(), duration * 1000 + 70);
   }
 
   function render() {
-    entityLayer.querySelectorAll('.entity').forEach(n => n.remove());
+    entityLayer.querySelectorAll('.entity').forEach(node => node.remove());
 
-    for (const d of state.defenders) {
-      const bug = BUGS[d.type];
+    for (const defender of state.defenders) {
       const el = document.createElement('div');
       el.className = 'entity defender';
-      el.style.left = (((d.col + .5) / COLS) * 100) + '%';
-      el.style.top = (((d.row + .5) / ROWS) * 100) + '%';
-      const hp = Math.max(0, d.hp / d.maxHp * 100);
-      el.innerHTML = `<span class="sprite">${bug.icon}</span><span class="hp"><span style="width:${hp}%"></span></span>`;
+      el.style.left = `${((defender.col + 0.5) / COLS) * 100}%`;
+      el.style.top = `${((defender.row + 0.5) / ROWS) * 100}%`;
+      const hp = Math.max(0, defender.hp / defender.maxHp * 100);
+      el.innerHTML = `${antSprite(defender.type)}<span class="hp"><span style="width:${hp}%"></span></span>`;
       entityLayer.appendChild(el);
     }
 
-    for (const z of state.zombies) {
-      const info = ZOMBIES[z.type];
+    for (const zombie of state.zombies) {
+      const info = ZOMBIES[zombie.type];
       const el = document.createElement('div');
-      el.className = 'entity zombie' + (z.slowFactor < 1 ? ' slowed' : '');
-      el.style.left = ((z.x / COLS) * 100) + '%';
-      el.style.top = (((z.row + .5) / ROWS) * 100) + '%';
-      const hp = Math.max(0, z.hp / z.maxHp * 100);
-      const hat = z.type === 'tinhead' ? '<span style="position:absolute;top:-18%;font-size:42%">🪣</span>' : z.type === 'brute' ? '<span style="position:absolute;top:-16%;font-size:40%">🪵</span>' : '';
+      el.className = `entity zombie${zombie.slowFactor < 1 ? ' slowed' : ''}`;
+      el.style.left = `${(zombie.x / COLS) * 100}%`;
+      el.style.top = `${((zombie.row + 0.5) / ROWS) * 100}%`;
+      const hp = Math.max(0, zombie.hp / zombie.maxHp * 100);
+      const hat = zombie.type === 'tinhead'
+        ? '<span class="zombie-hat">🪣</span>'
+        : zombie.type === 'brute'
+          ? '<span class="zombie-hat">🪵</span>'
+          : '';
       el.innerHTML = `${hat}<span class="sprite">${info.icon}</span><span class="hp"><span style="width:${hp}%"></span></span>`;
       entityLayer.appendChild(el);
     }
@@ -333,38 +484,56 @@
   }
 
   function renderDrops() {
-    dropLayer.innerHTML = '';
-    for (const d of state.drops) {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'nectar-drop';
-      btn.style.left = d.x + '%';
-      btn.style.top = d.y + '%';
-      btn.textContent = '+' + d.amount;
-      btn.setAttribute('aria-label', `Collect ${d.amount} nectar`);
-      btn.addEventListener('click', () => collectDrop(d.id));
-      dropLayer.appendChild(btn);
+    const liveIds = new Set(state.drops.map(drop => String(drop.id)));
+
+    for (const child of Array.from(dropLayer.children)) {
+      if (!liveIds.has(child.dataset.dropId)) child.remove();
+    }
+
+    for (const drop of state.drops) {
+      let button = dropLayer.querySelector(`[data-drop-id="${drop.id}"]`);
+      if (!button) {
+        button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'honeydew-drop';
+        button.dataset.dropId = String(drop.id);
+        button.innerHTML = `<span class="drop-gem" aria-hidden="true"></span><span class="drop-value">+${drop.amount}</span>`;
+        button.setAttribute('aria-label', `Collect ${drop.amount} Honeydew`);
+        button.addEventListener('pointerdown', event => {
+          event.preventDefault();
+          collectDrop(drop.id);
+        }, { passive: false });
+        dropLayer.appendChild(button);
+      }
+      button.style.left = `${drop.x}%`;
+      button.style.top = `${drop.y}%`;
     }
   }
 
   function updateUI() {
-    nectarValue.textContent = Math.floor(state.nectar);
-    heartValue.textContent = '❤️'.repeat(Math.max(0,state.hearts)) + '🖤'.repeat(Math.max(0,3-state.hearts));
+    honeydewValue.textContent = String(Math.floor(state.honeydew));
+    heartValue.textContent = '❤️'.repeat(Math.max(0, state.hearts)) + '🖤'.repeat(Math.max(0, 3 - state.hearts));
     waveText.textContent = `Wave ${state.wave}/${FINAL_WAVE}`;
-    const spawnProgress = state.waveQuota ? Math.min(1, state.waveSpawned / state.waveQuota) : 0;
-    waveFill.style.width = `${Math.round(spawnProgress * 100)}%`;
-    if (state.betweenWaves > 0 && state.wave > 1) statusText.textContent = `Wave ${state.wave} begins in ${Math.max(1, Math.ceil(state.betweenWaves))}…`;
+    const progress = state.waveQuota ? Math.min(1, state.waveSpawned / state.waveQuota) : 0;
+    waveFill.style.width = `${Math.round(progress * 100)}%`;
+
+    if (state.betweenWaves > 0 && state.wave > 1) {
+      statusText.textContent = `Wave ${state.wave} begins in ${Math.max(1, Math.ceil(state.betweenWaves))}…`;
+    }
   }
 
   function updateCardStates() {
-    document.querySelectorAll('.bug-card').forEach(btn => {
-      const key = btn.dataset.bug;
-      const bug = BUGS[key];
-      const cd = state.cooldowns[key] || 0;
-      btn.classList.toggle('selected', state.selected === key);
-      btn.disabled = state.ended || state.paused || state.nectar < bug.cost || cd > 0;
-      btn.querySelector('.cooldown').style.height = `${Math.min(100, cd / bug.cooldown * 100)}%`;
-      btn.setAttribute('aria-label', `${bug.name}, costs ${bug.cost} nectar, ${bug.role}${cd > 0 ? `, ready in ${Math.ceil(cd)} seconds` : ''}`);
+    document.querySelectorAll('.bug-card').forEach(button => {
+      const key = button.dataset.bug;
+      const unit = UNITS[key];
+      const cooldown = state.cooldowns[key] || 0;
+      button.classList.toggle('selected', state.selected === key);
+      button.disabled = state.ended || state.paused || state.honeydew < unit.cost || cooldown > 0;
+      button.querySelector('.cooldown').style.height = `${Math.min(100, cooldown / unit.cooldown * 100)}%`;
+      button.setAttribute(
+        'aria-label',
+        `${unit.name}, costs ${unit.cost} Honeydew, ${unit.role}${cooldown > 0 ? `, ready in ${Math.ceil(cooldown)} seconds` : ''}`
+      );
     });
   }
 
@@ -390,14 +559,14 @@
     if (state.ended) return;
     state.ended = true;
     state.running = false;
-    document.getElementById('endIcon').textContent = won ? '🏆🐝' : '🪦🐌';
-    document.getElementById('endTitle').textContent = won ? 'Garden Saved!' : 'Garden Overrun';
+    document.getElementById('endIcon').textContent = won ? '🏆🐜' : '🪦🐜';
+    document.getElementById('endTitle').textContent = won ? 'Colony Saved!' : 'Colony Overrun';
     document.getElementById('endText').textContent = won
-      ? `All ${FINAL_WAVE} waves cleared. The bugs live to snack another day.`
-      : 'The gate fell, but the bugs demand an immediate rematch.';
+      ? `All ${FINAL_WAVE} waves cleared. The aphids are safe and the Honeydew keeps flowing.`
+      : 'The gate fell, but the colony is already demanding a rematch.';
     endOverlay.classList.add('show');
-    endOverlay.setAttribute('aria-hidden','false');
-    tone(won ? 760 : 120, won ? .18 : .28);
+    endOverlay.setAttribute('aria-hidden', 'false');
+    tone(won ? 760 : 120, won ? 0.18 : 0.28);
     updateCardStates();
   }
 
@@ -410,18 +579,21 @@
       const gain = ctx.createGain();
       osc.type = 'sine';
       osc.frequency.value = freq;
-      gain.gain.setValueAtTime(.028, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + duration);
+      gain.gain.setValueAtTime(0.028, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
       osc.connect(gain).connect(ctx.destination);
       osc.start();
       osc.stop(ctx.currentTime + duration);
-    } catch (_) {}
+    } catch (_) {
+      // Audio is optional; the game remains fully playable without it.
+    }
   }
 
   function loop(now) {
     if (!state.running && state.ended) return;
-    const dt = Math.min(.05, Math.max(0, (now - state.lastTime) / 1000));
+    const dt = Math.min(0.05, Math.max(0, (now - state.lastTime) / 1000));
     state.lastTime = now;
+
     if (!state.paused) update(dt);
     updateUI();
     updateCardStates();
