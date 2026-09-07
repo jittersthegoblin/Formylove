@@ -13,7 +13,10 @@
   const zombieSprites = {
     shambler: 'assets/sprites/zombies/shambler_zombie.png',
     runner: 'assets/sprites/zombies/runner_zombie.png',
+    conehead: 'assets/sprites/zombies/conehead_zombie.png',
     tinhead: 'assets/sprites/zombies/tinhead_zombie.png',
+    gardener: 'assets/sprites/zombies/gardener_zombie.png',
+    exterminator: 'assets/sprites/zombies/exterminator_zombie.png',
     brute: 'assets/sprites/zombies/compost_brute_zombie.png'
   };
 
@@ -34,13 +37,9 @@
       const holder = zombie.querySelector('.sprite');
       if (!holder || holder.dataset.spriteArt === 'ready') return;
 
-      const hat = zombie.querySelector('.zombie-hat')?.textContent || '';
-      const emoji = holder.textContent || '';
-      let type = 'shambler';
-
-      if (hat.includes('🪣')) type = 'tinhead';
-      else if (hat.includes('🪵')) type = 'brute';
-      else if (emoji.includes('🧟‍♀️')) type = 'runner';
+      const type = zombie.dataset.zombieType && zombieSprites[zombie.dataset.zombieType]
+        ? zombie.dataset.zombieType
+        : 'shambler';
 
       zombie.classList.add(`zombie-art-${type}`);
       holder.textContent = '';
@@ -54,9 +53,6 @@
       image.setAttribute('aria-hidden', 'true');
       image.className = 'zombie-png-art';
       holder.appendChild(image);
-
-      const oldHat = zombie.querySelector('.zombie-hat');
-      if (oldHat) oldHat.style.display = 'none';
     });
   }
 
