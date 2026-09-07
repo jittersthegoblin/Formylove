@@ -15,14 +15,36 @@
       <div class="title-card">
         <div class="eyebrow">The colony needs you</div>
         <h1 id="game-title">ANTS<br><span class="title-vs">VS.</span> ZOMBIES</h1>
-        <p class="subtitle">Raise an ant army, tend your aphids, harvest Honeydew, and keep the undead away from the colony.</p>
+        <p class="subtitle">Raise an ant army, tend your aphids, harvest Honeydew, and keep the undead away from humanity.</p>
         <div class="hero-art" aria-hidden="true">
           <span class="hero-ant">🐜</span><span class="hero-ant">🐜</span><span class="versus">VS</span><span>🧟</span><span>🧟‍♂️</span>
         </div>
-        <button id="startBtn" class="primary" type="button">Defend the Humans</button>
+        <button id="storyBtn" class="primary" type="button">Defend the Humans</button>
+        <button id="startBtn" type="button" hidden aria-hidden="true">Start game</button>
         <div class="no-shop"><strong>MICROTRANSACTIONS: 0</strong><span>The colony economy is entirely aphid-based. ♡</span></div>
       </div>
     </section>
+
+    <div id="introOverlay" class="intro-overlay" aria-hidden="true">
+      <article class="intro-card" role="dialog" aria-modal="true" aria-labelledby="introTitle">
+        <div class="intro-year">THE YEAR IS</div>
+        <h2 id="introTitle">2030</h2>
+        <div class="intro-divider" aria-hidden="true"><span>🐜</span><span>•</span><span>☣</span><span>•</span><span>🧟</span></div>
+        <div class="intro-copy">
+          <p>Humanity had finally found a solution to its growing demand for food, energy, and living space:</p>
+          <p class="intro-emphasis">Make humans smaller.</p>
+          <p>The Great Shrinking was supposed to save resources and secure the future of civilization.</p>
+          <p>It backfired.</p>
+          <p>Something in the process changed the first miniature humans. They became hungry, shambling, <strong>tiny tiny zombies</strong> — and at their new size, the creatures best equipped to stop them were already beneath our feet.</p>
+          <p class="intro-final">Now humanity's survival rests with the ants.</p>
+          <p class="intro-tagline">Defend humanity, one tiny fight at a time.</p>
+        </div>
+        <div class="intro-actions">
+          <button id="launchBtn" class="primary" type="button">Send in the Ants</button>
+          <button id="introBackBtn" class="secondary intro-back" type="button">Back</button>
+        </div>
+      </article>
+    </div>
 
     <section id="game" class="screen" aria-label="Ants versus Zombies game">
       <div class="hud">
@@ -74,5 +96,37 @@
   </main>
 
   <script src="game.js"></script>
+  <script>
+    (() => {
+      const storyBtn = document.getElementById('storyBtn');
+      const introOverlay = document.getElementById('introOverlay');
+      const launchBtn = document.getElementById('launchBtn');
+      const introBackBtn = document.getElementById('introBackBtn');
+      const hiddenStartBtn = document.getElementById('startBtn');
+
+      function showIntro() {
+        introOverlay.classList.add('show');
+        introOverlay.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('intro-open');
+        launchBtn.focus();
+      }
+
+      function hideIntro() {
+        introOverlay.classList.remove('show');
+        introOverlay.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('intro-open');
+      }
+
+      storyBtn.addEventListener('click', showIntro);
+      introBackBtn.addEventListener('click', () => {
+        hideIntro();
+        storyBtn.focus();
+      });
+      launchBtn.addEventListener('click', () => {
+        hideIntro();
+        hiddenStartBtn.click();
+      });
+    })();
+  </script>
 </body>
 </html>
