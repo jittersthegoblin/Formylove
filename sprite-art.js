@@ -10,19 +10,6 @@
     document.head.appendChild(layoutLink);
   }
 
-  /* Load the reliable press-and-hold move control after game.js has initialized. */
-  if (!document.querySelector('script[data-hold-move]')) {
-    const holdScript = document.createElement('script');
-    holdScript.src = 'hold-move.js';
-    holdScript.dataset.holdMove = 'true';
-    document.body.appendChild(holdScript);
-  }
-
-  const moveHelp = document.querySelector('.game-help span:last-child');
-  if (moveHelp) {
-    moveHelp.textContent = '4. Hold an ant until the circle fills to move it for 10 Honeydew';
-  }
-
   const zombieSprites = {
     shambler: 'assets/sprites/zombies/shambler_zombie.png',
     runner: 'assets/sprites/zombies/runner_zombie.png',
