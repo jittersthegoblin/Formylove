@@ -1,6 +1,15 @@
 (() => {
   'use strict';
 
+  /* Load the landscape/approach-lane overrides after the main stylesheets. */
+  if (!document.querySelector('link[data-field-layout]')) {
+    const layoutLink = document.createElement('link');
+    layoutLink.rel = 'stylesheet';
+    layoutLink.href = 'layout.css';
+    layoutLink.dataset.fieldLayout = 'true';
+    document.head.appendChild(layoutLink);
+  }
+
   const zombieSprites = {
     shambler: 'assets/sprites/zombies/shambler_zombie.png',
     runner: 'assets/sprites/zombies/runner_zombie.png',
