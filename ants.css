@@ -125,6 +125,8 @@
   user-select: none;
   -webkit-user-drag: none;
   filter: drop-shadow(0 3px 3px rgba(0,0,0,.38));
+  transform: scaleX(-1);
+  transform-origin: center;
 }
 .entity.zombie.zombie-art-brute { width: 14.5%; height: 23.5%; }
 .entity.zombie.zombie-art-runner { width: 11.5%; height: 19.5%; }
