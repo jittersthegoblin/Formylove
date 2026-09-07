@@ -1,0 +1,115 @@
+/* Extra battlefield breathing room + landscape-first phone layout. */
+
+/* Reserve a visible approach lane on the right. The playable 8-column grid and
+   defender/drop coordinate layers use the left 88% of the battlefield. */
+.board-wrap {
+  aspect-ratio: 9 / 5;
+  background:
+    linear-gradient(90deg, transparent 0 88%, rgba(101, 78, 43, .22) 88% 100%),
+    radial-gradient(circle at 82% 8%, rgba(255,240,157,.18), transparent 19%),
+    linear-gradient(90deg, rgba(104,77,46,.94) 0 4.3%, transparent 4.3%),
+    linear-gradient(#38542f, #496b38);
+}
+.board { right: 12%; }
+#entities,
+#drops {
+  position: absolute;
+  inset: 0 12% 0 0;
+  overflow: visible;
+  pointer-events: none;
+}
+#drops .honeydew-drop { pointer-events: auto; }
+
+/* A soft visual divider makes the zombie entry area read as intentional space. */
+.board-wrap::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 12%;
+  pointer-events: none;
+  border-left: 1px dashed rgba(240, 222, 145, .24);
+  background:
+    repeating-linear-gradient(155deg, rgba(255,255,255,.025) 0 10px, transparent 10px 22px),
+    linear-gradient(90deg, rgba(78,100,50,.12), rgba(91,73,39,.24));
+  box-shadow: inset 12px 0 20px rgba(22,32,17,.14);
+}
+
+/* Keep actors above the approach-lane decoration. */
+#entities { z-index: 5; }
+#drops { z-index: 20; }
+
+/* Landscape phones: use the horizontal space instead of stacking everything. */
+@media (orientation: landscape) and (max-height: 560px) {
+  .app {
+    width: min(100%, 1180px);
+    padding: 5px max(7px, env(safe-area-inset-right)) 5px max(7px, env(safe-area-inset-left));
+  }
+
+  .hud { margin-bottom: 5px; }
+  .status-strip { margin-bottom: 5px; }
+
+  .game-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 34%);
+    grid-template-areas: "board shop";
+    align-items: stretch;
+  }
+
+  .board-wrap {
+    grid-area: board;
+    width: 100%;
+    height: min(68vh, 300px);
+    max-height: none;
+    min-height: 205px;
+    aspect-ratio: auto;
+    border-radius: 0;
+  }
+
+  .defender-bar {
+    grid-area: shop;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-content: start;
+    gap: 6px;
+    height: 100%;
+    padding: 7px;
+    border-top: 0;
+    border-left: 1px solid var(--line);
+    overflow: hidden;
+  }
+
+  .bug-card {
+    min-height: 80px;
+    padding: 6px;
+  }
+  .bug-card .name { font-size: 11px; }
+  .bug-card .role { font-size: 9px; line-height: 1.05; }
+
+  .game-help { display: none; }
+
+  .entity.defender { width: 10.5%; height: 21%; }
+  .entity.zombie { width: 11.5%; height: 22%; }
+  .entity.zombie.zombie-art-brute { width: 13.5%; height: 24%; }
+
+  .love-note {
+    margin-top: 5px;
+    padding-top: 5px;
+    padding-bottom: max(5px, env(safe-area-inset-bottom));
+    font-size: 11px;
+  }
+}
+
+/* Very short landscape screens need slightly denser cards. */
+@media (orientation: landscape) and (max-height: 410px) {
+  .board-wrap {
+    height: min(64vh, 245px);
+    min-height: 190px;
+  }
+  .defender-bar { min-width: 270px; }
+  .bug-card { min-height: 70px; padding: 5px; }
+  .bug-card .role { display: none; }
+  .ant-card .bug-icon { width: 38px; height: 30px; }
+  .ant-sprite.compact, .aphid-herd.compact { width: 36px; height: 29px; }
+}
