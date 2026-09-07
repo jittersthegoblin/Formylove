@@ -41,7 +41,23 @@
 #entities { z-index: 5; }
 #drops { z-index: 20; }
 
-/* Landscape phones: use the horizontal space instead of stacking everything. */
+/* Double-tap move mode. Blue squares are valid destinations and the source ant
+   gets a warm highlight so the gesture is easy to understand on a phone. */
+.cell.move-placeable {
+  background: rgba(118, 205, 255, .13);
+  box-shadow: inset 0 0 0 2px rgba(143, 216, 255, .24);
+}
+.cell.move-source {
+  background: rgba(255, 220, 102, .18);
+  box-shadow: inset 0 0 0 2px rgba(255, 226, 116, .40);
+}
+.entity.defender.moving-ant {
+  filter: drop-shadow(0 0 7px rgba(255, 228, 116, .85));
+}
+.game-help { flex-wrap: wrap; }
+
+/* Landscape phones: full-width battlefield, then all six ant cards in one row.
+   This keeps the buying hub in the 1 2 3 4 5 6 arrangement the user preferred. */
 @media (orientation: landscape) and (max-height: 560px) {
   .app {
     width: min(100%, 1180px);
@@ -53,63 +69,70 @@
 
   .game-shell {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(280px, 34%);
-    grid-template-areas: "board shop";
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "board"
+      "shop";
     align-items: stretch;
   }
 
   .board-wrap {
     grid-area: board;
     width: 100%;
-    height: min(68vh, 300px);
+    height: min(58vh, 270px);
     max-height: none;
-    min-height: 205px;
+    min-height: 170px;
     aspect-ratio: auto;
     border-radius: 0;
   }
 
   .defender-bar {
     grid-area: shop;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    align-content: start;
-    gap: 6px;
-    height: 100%;
-    padding: 7px;
-    border-top: 0;
-    border-left: 1px solid var(--line);
-    overflow: hidden;
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 5px;
+    width: 100%;
+    padding: 6px;
+    border-top: 1px solid var(--line);
+    border-left: 0;
+    overflow: visible;
   }
 
   .bug-card {
-    min-height: 80px;
-    padding: 6px;
+    min-width: 0;
+    min-height: 72px;
+    padding: 5px;
   }
-  .bug-card .name { font-size: 11px; }
-  .bug-card .role { font-size: 9px; line-height: 1.05; }
+  .bug-card .top { gap: 2px; }
+  .bug-card .name { font-size: 10px; line-height: 1; }
+  .bug-card .role { display: none; }
+  .bug-card .cost { font-size: 10px; }
+  .ant-card .bug-icon { width: 36px; height: 29px; }
+  .ant-sprite.compact, .aphid-herd.compact { width: 35px; height: 28px; }
 
   .game-help { display: none; }
 
-  .entity.defender { width: 10.5%; height: 21%; }
-  .entity.zombie { width: 11.5%; height: 22%; }
-  .entity.zombie.zombie-art-brute { width: 13.5%; height: 24%; }
+  .entity.defender { width: 9.5%; height: 21%; }
+  .entity.zombie { width: 10.5%; height: 22%; }
+  .entity.zombie.zombie-art-brute { width: 12.8%; height: 24%; }
 
   .love-note {
-    margin-top: 5px;
-    padding-top: 5px;
-    padding-bottom: max(5px, env(safe-area-inset-bottom));
+    margin-top: 4px;
+    padding-top: 4px;
+    padding-bottom: max(4px, env(safe-area-inset-bottom));
     font-size: 11px;
   }
 }
 
-/* Very short landscape screens need slightly denser cards. */
+/* Very short landscape screens need a denser board/shop combo. */
 @media (orientation: landscape) and (max-height: 410px) {
   .board-wrap {
-    height: min(64vh, 245px);
-    min-height: 190px;
+    height: min(52vh, 210px);
+    min-height: 150px;
   }
-  .defender-bar { min-width: 270px; }
-  .bug-card { min-height: 70px; padding: 5px; }
-  .bug-card .role { display: none; }
-  .ant-card .bug-icon { width: 38px; height: 30px; }
-  .ant-sprite.compact, .aphid-herd.compact { width: 36px; height: 29px; }
+  .bug-card { min-height: 62px; padding: 4px; }
+  .bug-card .name { font-size: 9px; }
+  .bug-card .cost { font-size: 9px; }
+  .ant-card .bug-icon { width: 32px; height: 26px; }
+  .ant-sprite.compact, .aphid-herd.compact { width: 31px; height: 25px; }
 }
