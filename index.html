@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#20301c" />
+  <meta name="color-scheme" content="dark" />
+  <title>Bug Brigade: Graveyard Garden</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <section id="menu" class="screen active" aria-labelledby="game-title">
+      <div class="title-card">
+        <div class="eyebrow">A tiny garden-defense game</div>
+        <h1 id="game-title">BUG<br>BRIGADE</h1>
+        <p class="subtitle">Defend the moonlit garden with a very small army of very determined bugs.</p>
+        <div class="hero-art" aria-hidden="true"><span>🐝</span><span>🪲</span><span class="versus">VS</span><span>🧟</span><span>🧟‍♂️</span></div>
+        <button id="startBtn" class="primary" type="button">Start the Night Shift</button>
+        <div class="no-shop"><strong>MICROTRANSACTIONS: 0</strong><span>All bugs have already been paid in snacks. ♡</span></div>
+      </div>
+    </section>
+
+    <section id="game" class="screen" aria-label="Bug Brigade game">
+      <div class="hud">
+        <div class="hud-left">
+          <div class="pill" aria-label="Nectar"><span aria-hidden="true">🍯</span> Nectar <span id="nectarValue" class="value">175</span></div>
+          <div class="pill" aria-label="Garden hearts"><span class="hearts" id="heartValue">❤️❤️❤️</span></div>
+          <div class="pill"><span aria-hidden="true">🌙</span> <span id="waveText">Wave 1/6</span></div>
+        </div>
+        <button id="pauseBtn" class="icon-btn" type="button" aria-label="Pause game">⏸️</button>
+      </div>
+
+      <div class="status-strip">
+        <strong id="statusText">Plant your first defender.</strong>
+        <div class="wave-meter" aria-label="Wave progress"><span id="waveFill"></span></div>
+      </div>
+
+      <div class="game-shell">
+        <div id="boardWrap" class="board-wrap">
+          <div class="fence" aria-hidden="true"></div>
+          <div id="board" class="board" role="grid" aria-label="5 by 8 garden defense grid"></div>
+          <div id="entities" aria-hidden="true"></div>
+          <div id="drops"></div>
+          <div id="toast" class="toast" role="status" aria-live="polite"></div>
+          <div id="pauseOverlay" class="overlay" aria-hidden="true">
+            <div class="overlay-card">
+              <div class="big">🐌💤</div>
+              <h2>Paused</h2>
+              <p>The bugs are taking a very union-approved break.</p>
+              <button id="resumeBtn" class="primary" type="button">Back to the Garden</button>
+            </div>
+          </div>
+          <div id="endOverlay" class="overlay" aria-hidden="true">
+            <div class="overlay-card">
+              <div id="endIcon" class="big">🏆</div>
+              <h2 id="endTitle">Garden Saved!</h2>
+              <p id="endText">The night shift survived.</p>
+              <div class="overlay-actions">
+                <button id="againBtn" class="primary" type="button">Play Again</button>
+                <button id="menuBtn" class="secondary" type="button">Menu</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="defenderBar" class="defender-bar" aria-label="Bug defenders"></div>
+        <div class="game-help"><span>1. Tap a bug card</span><span>2. Tap a garden square</span><span>3. Tap golden nectar drops</span></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="game.js"></script>
+</body>
+</html>
