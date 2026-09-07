@@ -54,9 +54,16 @@
       box-shadow: 0 0 0 4px rgba(255,224,113,.20), 0 0 18px rgba(255,224,113,.62);
       transform: translate(-50%, -50%) scale(1.08);
     }
+    .move-hold-hint { display: none !important; }
 
     /* In landscape the six ant cards stay in one horizontal row. */
     @media (orientation: landscape) and (max-height: 560px) {
+      .move-hold-hint {
+        display: inline-flex !important;
+        font-size: 11px !important;
+        padding: 6px 8px !important;
+        min-height: 34px !important;
+      }
       .defender-bar {
         display: flex !important;
         align-items: stretch;
@@ -81,9 +88,19 @@
         min-width: 78px !important;
       }
       .hold-move-meter { width: 31px; height: 31px; }
+      .move-hold-hint { font-size: 10px !important; padding: 5px 7px !important; }
     }
   `;
   document.head.appendChild(style);
+
+  const hudLeft = document.querySelector('.hud-left');
+  if (hudLeft && !document.querySelector('.move-hold-hint')) {
+    const hint = document.createElement('div');
+    hint.className = 'pill move-hold-hint';
+    hint.setAttribute('aria-label', 'Hold an ant until the circle fills to move it for 10 Honeydew');
+    hint.textContent = '↔ Hold ant to move · 10';
+    hudLeft.appendChild(hint);
+  }
 
   function cellCoordinates(cell) {
     return {
@@ -190,6 +207,7 @@
       raf: 0
     };
 
+    if (statusText) statusText.textContent = 'Keep holding… release after the circle fills to move this ant.';
     try { cell.setPointerCapture(event.pointerId); } catch (_) {}
     activeHold.raf = requestAnimationFrame(animateHold);
   }, { passive: true });
