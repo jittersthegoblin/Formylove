@@ -48,6 +48,26 @@
     .intro-copy .intro-tagline { color: #f3cc59; font-weight: 1000; font-style: italic; }
     .intro-actions { display: grid; gap: 9px; margin-top: 20px; }
     .intro-back { width: 100%; min-height: 46px; }
+    .site-logo {
+      display: block;
+      width: min(100%, 570px);
+      height: auto;
+      margin: 2px auto 12px;
+      filter: drop-shadow(0 12px 14px rgba(0,0,0,.34));
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    .sr-title {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
     .love-note {
       width: min(100%, 920px);
       margin: 14px auto 4px;
@@ -66,6 +86,7 @@
       .intro-card { border-radius: 19px; }
       .intro-copy p { font-size: 14px; line-height: 1.42; }
       .intro-divider { margin: 8px 0 12px; }
+      .site-logo { width: min(100%, 520px); margin-bottom: 9px; }
       .love-note { font-size: 12px; margin-top: 10px; }
     }
   </style>
@@ -74,16 +95,10 @@
   <main class="app">
     <section id="menu" class="screen active" aria-labelledby="game-title">
       <div class="title-card">
-        <div class="eyebrow">The colony needs you</div>
-        <h1 id="game-title">ANTS<br><span class="title-vs">VS.</span> ZOMBIES</h1>
+        <div class="eyebrow">Humanity needs you</div>
+        <h1 id="game-title" class="sr-title">Ants vs. Zombies</h1>
+        <img class="site-logo" src="assets/sprites/ants-vs-zombies-logo.png" alt="Ants vs. Zombies" draggable="false" />
         <p class="subtitle">Raise an ant army, tend your aphids, harvest Honeydew, and keep the undead away from humanity.</p>
-        <div class="hero-art" aria-hidden="true">
-          <img class="hero-sprite" src="assets/sprites/ants/worker_ant.png" alt="" draggable="false">
-          <img class="hero-sprite" src="assets/sprites/ants/major_soldier_ant.png" alt="" draggable="false">
-          <span class="versus">VS</span>
-          <img class="hero-sprite" src="assets/sprites/zombies/shambler_zombie.png" alt="" draggable="false">
-          <img class="hero-sprite" src="assets/sprites/zombies/tinhead_zombie.png" alt="" draggable="false">
-        </div>
         <button id="storyBtn" class="primary" type="button">Defend the Humans</button>
         <button id="startBtn" type="button" hidden aria-hidden="true">Start game</button>
         <div class="no-shop"><strong>MICROTRANSACTIONS: 0</strong><span>The colony economy is entirely aphid-based. ♡</span></div>
@@ -115,7 +130,7 @@
       <div class="hud">
         <div class="hud-left">
           <div class="pill" aria-label="Honeydew"><span class="dew-icon" aria-hidden="true"></span> Honeydew <span id="nectarValue" class="value">175</span></div>
-          <div class="pill" aria-label="Colony defenses"><span class="hearts" id="heartValue">❤️❤️❤️</span></div>
+          <div class="pill" aria-label="Human refuge defenses"><span class="hearts" id="heartValue">❤️❤️❤️</span></div>
           <div class="pill"><span aria-hidden="true">🌙</span> <span id="waveText">Wave 1/6</span></div>
         </div>
         <button id="pauseBtn" class="icon-btn" type="button" aria-label="Pause game">⏸️</button>
@@ -129,7 +144,7 @@
       <div class="game-shell">
         <div id="boardWrap" class="board-wrap">
           <div class="fence" aria-hidden="true"></div>
-          <div id="board" class="board" role="grid" aria-label="5 by 8 colony defense grid"></div>
+          <div id="board" class="board" role="grid" aria-label="5 by 8 human refuge defense grid"></div>
           <div id="entities" aria-hidden="true"></div>
           <div id="drops"></div>
           <div id="toast" class="toast" role="status" aria-live="polite"></div>
@@ -137,15 +152,15 @@
             <div class="overlay-card">
               <div class="big">🐜💤</div>
               <h2>Paused</h2>
-              <p>The colony is taking a very union-approved break.</p>
-              <button id="resumeBtn" class="primary" type="button">Back to the Colony</button>
+              <p>The ants are taking a very union-approved break.</p>
+              <button id="resumeBtn" class="primary" type="button">Back to the Fight</button>
             </div>
           </div>
           <div id="endOverlay" class="overlay" aria-hidden="true">
             <div class="overlay-card">
               <div id="endIcon" class="big">🏆</div>
-              <h2 id="endTitle">Colony Saved!</h2>
-              <p id="endText">The night shift survived.</p>
+              <h2 id="endTitle">Humanity Saved!</h2>
+              <p id="endText">The tiny refuge survived.</p>
               <div class="overlay-actions">
                 <button id="againBtn" class="primary" type="button">Play Again</button>
                 <button id="menuBtn" class="secondary" type="button">Menu</button>
