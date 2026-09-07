@@ -3,7 +3,9 @@
 
   const ROWS = 5;
   const COLS = 8;
-  const FINAL_WAVE = 6;
+  const FINAL_WAVE = 10;
+  const MOVE_COST = 10;
+  const DOUBLE_TAP_MS = 380;
 
   const menu = document.getElementById('menu');
   const game = document.getElementById('game');
@@ -52,10 +54,37 @@
   };
 
   const ZOMBIES = {
-    shambler: { name: 'Shambler', icon: '🧟', hp: 110, speed: 0.125, damage: 24, rate: 1.15 },
-    runner:   { name: 'Runner', icon: '🧟‍♀️', hp: 82, speed: 0.19, damage: 18, rate: 0.95 },
-    tinhead:  { name: 'Tinhead', icon: '🧟‍♂️', hp: 245, speed: 0.09, damage: 28, rate: 1.25 },
-    brute:    { name: 'Compost Brute', icon: '🧟', hp: 390, speed: 0.068, damage: 42, rate: 1.4 }
+    shambler: {
+      name: 'Shambler', icon: '🧟', hp: 110, speed: 0.125, damage: 24, rate: 1.15
+    },
+    runner: {
+      name: 'Runner', icon: '🧟‍♀️', hp: 82, speed: 0.19, damage: 18, rate: 0.95
+    },
+    conehead: {
+      name: 'Conehead', icon: '🧟', hp: 165, speed: 0.112, damage: 26, rate: 1.12
+    },
+    tinhead: {
+      name: 'Tinhead', icon: '🧟‍♂️', hp: 255, speed: 0.088, damage: 30, rate: 1.25
+    },
+    gardener: {
+      name: 'Gardener', icon: '🧟', hp: 210, speed: 0.105, damage: 38, rate: 0.98
+    },
+    exterminator: {
+      name: 'Exterminator', icon: '🧟', hp: 275, speed: 0.082, damage: 24, rate: 1.35,
+      reach: 1.25
+    },
+    brute: {
+      name: 'Compost Brute', icon: '🧟', hp: 430, speed: 0.067, damage: 44, rate: 1.4
+    }
+  };
+
+  const DEBUTS = {
+    2: 'runner',
+    3: 'conehead',
+    4: 'tinhead',
+    5: 'gardener',
+    6: 'exterminator',
+    7: 'brute'
   };
 
   const state = {
@@ -68,12 +97,15 @@
     waveElapsed: 0,
     waveDuration: 24,
     waveSpawned: 0,
-    waveQuota: 7,
+    waveQuota: 6,
     betweenWaves: 0,
     defenders: [],
     zombies: [],
     drops: [],
     selected: null,
+    moveDefenderId: null,
+    lastTapKey: '',
+    lastTapAt: 0,
     cooldowns: {},
     lastTime: 0,
     wildAphidTimer: 5.5,
@@ -98,6 +130,48 @@
       <span class="ant-abdomen"></span><span class="ant-thorax"></span><span class="ant-head"></span>
       <span class="ant-mandible m1"></span><span class="ant-mandible m2"></span>
     </span>`;
+  }
+
+  function getDefenderAt(row, col) {
+    return state.defenders.find(defender => defender.hp > 0 && defender.row === row && defender.col === col) || null;
+  }
+
+  function refreshCellHints() {
+    const moving = state.defenders.find(defender => defender.id === state.moveDefenderId && defender.hp > 0) || null;
+    document.querySelectorAll('.cell').forEach(cell => {
+      const row = Number(cell.dataset.row);
+      const col = Number(cell.dataset.col);
+      const occupied = getDefenderAt(row, col);
+      cell.classList.toggle('placeable', Boolean(state.selected) && !occupied && col !== 0);
+      cell.classList.toggle('move-source', Boolean(moving) && moving.row === row && moving.col === col);
+      cell.classList.toggle('move-placeable', Boolean(moving) && !occupied && col !== 0);
+    });
+  }
+
+  function cancelMoveMode(updateStatus = true) {
+    state.moveDefenderId = null;
+    state.lastTapKey = '';
+    state.lastTapAt = 0;
+    refreshCellHints();
+    if (updateStatus && !state.selected) {
+      statusText.textContent = 'Choose an ant, then tap a garden square.';
+    }
+  }
+
+  function beginMoveMode(defender) {
+    if (state.honeydew < MOVE_COST) {
+      showToast(`Need ${MOVE_COST} Honeydew to move an ant.`);
+      return;
+    }
+    state.selected = null;
+    state.moveDefenderId = defender.id;
+    state.lastTapKey = '';
+    state.lastTapAt = 0;
+    refreshCellHints();
+    const name = UNITS[defender.type].name;
+    statusText.textContent = `Moving ${name} — tap an empty square. Cost: ${MOVE_COST} Honeydew.`;
+    showToast(`↔️ Move ${name} for ${MOVE_COST} Honeydew`);
+    updateCardStates();
   }
 
   function makeGrid() {
@@ -146,7 +220,7 @@
       hearts: 3,
       wave: 1,
       waveElapsed: 0,
-      waveDuration: 24,
+      waveDuration: durationForWave(1),
       waveSpawned: 0,
       waveQuota: quotaForWave(1),
       betweenWaves: 1.3,
@@ -154,6 +228,9 @@
       zombies: [],
       drops: [],
       selected: null,
+      moveDefenderId: null,
+      lastTapKey: '',
+      lastTapAt: 0,
       cooldowns: {},
       wildAphidTimer: 5.5,
       lastTime: performance.now(),
@@ -168,6 +245,7 @@
     pauseOverlay.setAttribute('aria-hidden', 'true');
     pauseBtn.textContent = '⏸️';
     statusText.textContent = 'Choose an ant, then tap a garden square.';
+    refreshCellHints();
     updateUI();
     updateCardStates();
     cancelAnimationFrame(raf);
@@ -175,11 +253,25 @@
   }
 
   function quotaForWave(wave) {
-    return 5 + wave * 2;
+    return 5 + Math.round(wave * 1.3);
   }
 
   function durationForWave(wave) {
-    return Math.max(18, 25 - wave * 0.7);
+    return Math.max(17, 25 - wave * 0.8);
+  }
+
+  function zombiePoolForWave(wave) {
+    const pool = ['shambler', 'shambler'];
+    if (wave >= 2) pool.push('runner');
+    if (wave >= 3) pool.push('conehead', 'conehead');
+    if (wave >= 4) pool.push('tinhead');
+    if (wave >= 5) pool.push('gardener');
+    if (wave >= 6) pool.push('exterminator');
+    if (wave >= 7) pool.push('brute');
+    if (wave >= 8) pool.push('runner', 'tinhead', 'gardener');
+    if (wave >= 9) pool.push('conehead', 'exterminator', 'brute');
+    if (wave >= 10) pool.push('tinhead', 'gardener', 'exterminator', 'brute');
+    return pool;
   }
 
   function startGame() {
@@ -190,6 +282,8 @@
 
   function selectUnit(key) {
     if (!state.running || state.paused || state.ended) return;
+    if (state.moveDefenderId !== null) cancelMoveMode(false);
+
     const unit = UNITS[key];
     if ((state.cooldowns[key] || 0) > 0) {
       showToast(`${unit.name} is regrouping.`);
@@ -201,23 +295,85 @@
     }
 
     state.selected = state.selected === key ? null : key;
+    refreshCellHints();
     updateCardStates();
-    document.querySelectorAll('.cell').forEach(cell => cell.classList.toggle('placeable', Boolean(state.selected)));
     statusText.textContent = state.selected
       ? `${unit.name} selected — tap an empty square.`
       : 'Choose an ant, then tap a garden square.';
   }
 
   function onCellTap(event) {
-    if (!state.running || state.paused || state.ended || !state.selected) return;
+    if (!state.running || state.paused || state.ended) return;
 
     const row = Number(event.currentTarget.dataset.row);
     const col = Number(event.currentTarget.dataset.col);
+    const occupant = getDefenderAt(row, col);
+
+    if (state.moveDefenderId !== null) {
+      const moving = state.defenders.find(defender => defender.id === state.moveDefenderId && defender.hp > 0);
+      if (!moving) {
+        cancelMoveMode();
+        return;
+      }
+
+      if (occupant && occupant.id === moving.id) {
+        cancelMoveMode();
+        showToast('Move cancelled.');
+        return;
+      }
+      if (col === 0) {
+        showToast('Keep the first column clear for the human refuge.');
+        return;
+      }
+      if (occupant) {
+        showToast('That patch is already occupied.');
+        return;
+      }
+      if (state.honeydew < MOVE_COST) {
+        cancelMoveMode();
+        showToast(`Need ${MOVE_COST} Honeydew to move an ant.`);
+        return;
+      }
+
+      state.honeydew -= MOVE_COST;
+      moving.row = row;
+      moving.col = col;
+      state.moveDefenderId = null;
+      state.lastTapKey = '';
+      state.lastTapAt = 0;
+      refreshCellHints();
+      statusText.textContent = `${UNITS[moving.type].name} moved for ${MOVE_COST} Honeydew.`;
+      showToast(`↔️ Ant moved! −${MOVE_COST} Honeydew`);
+      tone(440, 0.05);
+      updateUI();
+      updateCardStates();
+      render();
+      return;
+    }
+
+    if (!state.selected && occupant) {
+      const now = performance.now();
+      const key = `${row}:${col}`;
+      if (state.lastTapKey === key && now - state.lastTapAt <= DOUBLE_TAP_MS) {
+        beginMoveMode(occupant);
+      } else {
+        state.lastTapKey = key;
+        state.lastTapAt = now;
+        statusText.textContent = `Double-tap ${UNITS[occupant.type].name} to move it for ${MOVE_COST} Honeydew.`;
+      }
+      return;
+    }
+
+    state.lastTapKey = '';
+    state.lastTapAt = 0;
+
+    if (!state.selected) return;
+
     if (col === 0) {
       showToast('Keep the first column clear for the human refuge.');
       return;
     }
-    if (state.defenders.some(defender => defender.row === row && defender.col === col && defender.hp > 0)) {
+    if (occupant) {
       showToast('That patch is already occupied.');
       return;
     }
@@ -241,7 +397,7 @@
 
     tone(360, 0.05);
     state.selected = null;
-    document.querySelectorAll('.cell').forEach(cell => cell.classList.remove('placeable'));
+    refreshCellHints();
     statusText.textContent = `${unit.name} deployed.`;
     updateUI();
     updateCardStates();
@@ -249,14 +405,17 @@
   }
 
   function spawnZombie() {
-    let pool = ['shambler'];
-    if (state.wave >= 2) pool.push('runner');
-    if (state.wave >= 3) pool.push('tinhead');
-    if (state.wave >= 5) pool.push('brute');
-    const weighted = pool.concat(state.wave >= 4 ? ['shambler', 'tinhead'] : ['shambler']);
-    const type = weighted[Math.floor(Math.random() * weighted.length)];
-    const zombie = ZOMBIES[type];
+    const debut = DEBUTS[state.wave];
+    let type;
 
+    if (state.waveSpawned === 0 && debut) {
+      type = debut;
+    } else {
+      const pool = zombiePoolForWave(state.wave);
+      type = pool[Math.floor(Math.random() * pool.length)];
+    }
+
+    const zombie = ZOMBIES[type];
     state.zombies.push({
       id: state.id++,
       type,
@@ -268,6 +427,10 @@
       slowFactor: 1,
       slowTimer: 0
     });
+
+    if (state.waveSpawned === 0 && debut) {
+      showToast(`⚠️ New threat: ${zombie.name}!`);
+    }
     state.waveSpawned += 1;
   }
 
@@ -387,15 +550,16 @@
         if (zombie.slowTimer <= 0) zombie.slowFactor = 1;
       }
 
+      const reach = info.reach || 0.62;
       const blocker = state.defenders
-        .filter(defender => defender.hp > 0 && defender.row === zombie.row && defender.col < zombie.x && zombie.x - defender.col < 0.62)
+        .filter(defender => defender.hp > 0 && defender.row === zombie.row && defender.col < zombie.x && zombie.x - defender.col < reach)
         .sort((a, b) => b.col - a.col)[0];
 
       if (blocker) {
         if (zombie.attackTimer <= 0) {
           blocker.hp -= info.damage;
           zombie.attackTimer = info.rate;
-          tone(120, 0.025);
+          tone(zombie.type === 'exterminator' ? 165 : 120, 0.025);
         }
       } else {
         zombie.x -= info.speed * zombie.slowFactor * dt;
@@ -412,6 +576,10 @@
     state.zombies = state.zombies.filter(zombie => zombie.hp > 0);
     state.defenders = state.defenders.filter(defender => defender.hp > 0);
 
+    if (state.moveDefenderId !== null && !state.defenders.some(defender => defender.id === state.moveDefenderId)) {
+      cancelMoveMode();
+    }
+
     if (state.waveSpawned >= state.waveQuota && state.zombies.length === 0 && state.betweenWaves <= 0) {
       if (state.wave >= FINAL_WAVE) {
         endGame(true);
@@ -422,9 +590,13 @@
         state.waveDuration = durationForWave(state.wave);
         state.waveQuota = quotaForWave(state.wave);
         state.betweenWaves = 3;
-        state.honeydew += 35;
-        statusText.textContent = `Wave ${state.wave} incoming — aphid harvest +35 Honeydew.`;
-        showToast(`🌙 Wave ${state.wave} incoming!`);
+        const waveBonus = 25 + state.wave * 2;
+        state.honeydew += waveBonus;
+        cancelMoveMode(false);
+        state.selected = null;
+        refreshCellHints();
+        statusText.textContent = `Wave ${state.wave} incoming — aphid harvest +${waveBonus} Honeydew.`;
+        showToast(`🌙 Wave ${state.wave} incoming! +${waveBonus}`);
         tone(700, 0.08);
       }
     }
@@ -458,7 +630,7 @@
 
     for (const defender of state.defenders) {
       const el = document.createElement('div');
-      el.className = 'entity defender';
+      el.className = `entity defender${defender.id === state.moveDefenderId ? ' moving-ant' : ''}`;
       el.style.left = `${((defender.col + 0.5) / COLS) * 100}%`;
       el.style.top = `${((defender.row + 0.5) / ROWS) * 100}%`;
       const hp = Math.max(0, defender.hp / defender.maxHp * 100);
@@ -470,15 +642,11 @@
       const info = ZOMBIES[zombie.type];
       const el = document.createElement('div');
       el.className = `entity zombie${zombie.slowFactor < 1 ? ' slowed' : ''}`;
+      el.dataset.zombieType = zombie.type;
       el.style.left = `${(zombie.x / COLS) * 100}%`;
       el.style.top = `${((zombie.row + 0.5) / ROWS) * 100}%`;
       const hp = Math.max(0, zombie.hp / zombie.maxHp * 100);
-      const hat = zombie.type === 'tinhead'
-        ? '<span class="zombie-hat">🪣</span>'
-        : zombie.type === 'brute'
-          ? '<span class="zombie-hat">🪵</span>'
-          : '';
-      el.innerHTML = `${hat}<span class="sprite">${info.icon}</span><span class="hp"><span style="width:${hp}%"></span></span>`;
+      el.innerHTML = `<span class="sprite">${info.icon}</span><span class="hp"><span style="width:${hp}%"></span></span>`;
       entityLayer.appendChild(el);
     }
 
@@ -519,7 +687,7 @@
     const progress = state.waveQuota ? Math.min(1, state.waveSpawned / state.waveQuota) : 0;
     waveFill.style.width = `${Math.round(progress * 100)}%`;
 
-    if (state.betweenWaves > 0 && state.wave > 1) {
+    if (state.betweenWaves > 0 && state.wave > 1 && state.moveDefenderId === null && !state.selected) {
       statusText.textContent = `Wave ${state.wave} begins in ${Math.max(1, Math.ceil(state.betweenWaves))}…`;
     }
   }
@@ -561,6 +729,7 @@
     if (state.ended) return;
     state.ended = true;
     state.running = false;
+    cancelMoveMode(false);
     document.getElementById('endIcon').textContent = won ? '🏆🐜' : '🪦🐜';
     document.getElementById('endTitle').textContent = won ? 'Humanity Saved!' : 'Refuge Overrun';
     document.getElementById('endText').textContent = won
@@ -609,6 +778,7 @@
     cancelAnimationFrame(raf);
     state.running = false;
     state.ended = true;
+    cancelMoveMode(false);
     game.classList.remove('active');
     menu.classList.add('active');
     endOverlay.classList.remove('show');
