@@ -1,32 +1,31 @@
-/* Ants vs. Zombies theme layer. The ants and aphids are built from CSS shapes so
-   the game has its own scalable sprites while we develop the full art set. */
+/* Ants vs. Zombies art layer — uses the uploaded PNG sprite set. */
 .title-vs { color: #e0b74c; font-size: .58em; letter-spacing: -.02em; }
-.hero-ant { filter: sepia(.28) saturate(1.35); }
 
+/* Honeydew artwork */
 .dew-icon,
 .drop-gem {
   display: inline-block;
-  width: 14px;
-  height: 18px;
-  border-radius: 60% 40% 62% 38% / 72% 44% 56% 28%;
-  background: radial-gradient(circle at 38% 30%, #fffbd0 0 16%, #f7df6d 26%, #d7a43b 60%, #8c5b17 100%);
-  border: 1px solid rgba(81, 48, 10, .7);
-  transform: rotate(38deg);
-  box-shadow: inset 2px 2px 3px rgba(255,255,255,.45), 0 1px 2px rgba(0,0,0,.35);
+  width: 16px;
+  height: 20px;
+  background: url('assets/sprites/resources/honeydew_drop.png') center / contain no-repeat;
+  border: 0;
+  box-shadow: none;
+  transform: none;
   flex: 0 0 auto;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,.35));
 }
-.dew-icon.mini { width: 9px; height: 12px; margin-right: 2px; vertical-align: -2px; }
+.dew-icon.mini { width: 11px; height: 14px; margin-right: 2px; vertical-align: -2px; }
 
 .honeydew-drop {
   position: absolute;
   z-index: 25;
-  width: 52px;
-  height: 52px;
+  width: 54px;
+  height: 58px;
   border: 0;
   border-radius: 50%;
   display: grid;
   place-items: center;
-  background: radial-gradient(circle, rgba(255,249,183,.30), rgba(241,203,75,.13) 46%, rgba(94,62,14,.06) 70%, transparent 72%);
+  background: radial-gradient(circle, rgba(255,249,183,.24), rgba(241,203,75,.10) 48%, transparent 72%);
   color: #fff2a1;
   font-weight: 1000;
   cursor: pointer;
@@ -35,194 +34,116 @@
   -webkit-tap-highlight-color: transparent;
   animation: dewBob 1.25s ease-in-out infinite alternate;
 }
-.honeydew-drop .drop-gem { width: 25px; height: 31px; }
+.honeydew-drop .drop-gem { width: 31px; height: 38px; }
 .honeydew-drop .drop-value {
   position: absolute;
   left: 50%;
-  bottom: -2px;
+  bottom: -1px;
   transform: translateX(-50%);
   min-width: 31px;
   padding: 1px 5px;
   border-radius: 10px;
-  background: rgba(26, 30, 17, .88);
+  background: rgba(26, 30, 17, .90);
   border: 1px solid rgba(255,255,255,.13);
   font-size: 10px;
   line-height: 16px;
+  pointer-events: none;
 }
 @keyframes dewBob { from { margin-top: -3px; } to { margin-top: 3px; } }
 
-/* ---------- Original top-down ant sprites ---------- */
-.ant-sprite {
-  --ant-head: #4b281b;
-  --ant-mid: #7f3a22;
-  --ant-back: #5a2b24;
-  --ant-line: #1d1514;
-  position: relative;
-  display: block;
-  width: 54px;
-  height: 38px;
-  transform: rotate(-2deg);
-  filter: drop-shadow(0 3px 2px rgba(0,0,0,.34));
-}
-.ant-sprite.compact { width: 42px; height: 29px; transform: scale(.86); transform-origin: center; }
-.ant-sprite > span { position: absolute; display: block; box-sizing: border-box; }
-.ant-abdomen,
-.ant-thorax,
-.ant-head {
-  top: 50%;
-  transform: translateY(-50%);
-  border: 2px solid var(--ant-line);
-  z-index: 3;
-}
-.ant-abdomen {
-  left: 3px;
-  width: 23px;
-  height: 27px;
-  border-radius: 56% 44% 48% 52%;
-  background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.15), transparent 25%), var(--ant-back);
-}
-.ant-thorax {
-  left: 23px;
-  width: 16px;
-  height: 18px;
-  border-radius: 48%;
-  background: var(--ant-mid);
-}
-.ant-head {
-  left: 36px;
-  width: 17px;
-  height: 20px;
-  border-radius: 44% 58% 58% 44%;
-  background: var(--ant-head);
-}
-.ant-head::before,
-.ant-head::after {
-  content: '';
-  position: absolute;
-  width: 13px;
-  height: 1.5px;
-  right: -9px;
-  top: 4px;
-  background: var(--ant-line);
-  transform-origin: left center;
-}
-.ant-head::before { transform: rotate(-32deg); }
-.ant-head::after { top: 13px; transform: rotate(32deg); }
-.ant-leg {
-  left: 23px;
-  width: 23px;
-  height: 2px;
-  background: var(--ant-line);
-  border-radius: 99px;
-  z-index: 1;
-  transform-origin: 4px center;
-}
-.ant-leg.l1 { top: 9px; transform: rotate(-39deg); }
-.ant-leg.l2 { top: 17px; transform: rotate(-8deg); }
-.ant-leg.l3 { top: 25px; transform: rotate(35deg); }
-.ant-leg.r1 { top: 9px; transform: rotate(39deg) scaleY(-1); }
-.ant-leg.r2 { top: 19px; transform: rotate(8deg); }
-.ant-leg.r3 { top: 28px; transform: rotate(-35deg); }
-.ant-leg.r1, .ant-leg.r2, .ant-leg.r3 { left: 18px; }
-.ant-mandible {
-  left: 50px;
-  width: 10px;
-  height: 2px;
-  background: var(--ant-line);
-  transform-origin: left center;
-  z-index: 4;
-}
-.ant-mandible.m1 { top: 14px; transform: rotate(-28deg); }
-.ant-mandible.m2 { top: 22px; transform: rotate(28deg); }
-
-.ant-woodant { --ant-head:#251e24; --ant-mid:#8e3d26; --ant-back:#34232a; }
-.ant-major { --ant-head:#59271d; --ant-mid:#a24927; --ant-back:#43231e; }
-.ant-major .ant-head { width: 21px; height: 25px; left: 34px; }
-.ant-major .ant-mandible { left: 52px; width: 12px; }
-.ant-weaver { --ant-head:#b76018; --ant-mid:#e38a21; --ant-back:#bc671c; }
-.ant-weaver .ant-abdomen { background: linear-gradient(90deg, #c56a19 0 58%, #dca51e 58%); }
-.ant-fireant { --ant-head:#a9341f; --ant-mid:#e05b22; --ant-back:#8c261d; }
-.ant-fireant .ant-abdomen { background: radial-gradient(circle at 25% 30%, #f38b2a, transparent 22%), #8c261d; }
-.ant-trapjaw { --ant-head:#211a2f; --ant-mid:#4b2b58; --ant-back:#292037; }
-.ant-trapjaw .ant-head { left: 35px; width: 19px; height: 22px; }
-.ant-trapjaw .ant-mandible { left: 51px; width: 15px; height: 3px; border-radius: 99px; }
-.ant-trapjaw .ant-mandible.m1 { top: 12px; transform: rotate(-38deg); }
-.ant-trapjaw .ant-mandible.m2 { top: 23px; transform: rotate(38deg); }
-
-/* ---------- Aphid herd resource unit ---------- */
+/* Replace the temporary CSS ants with the uploaded ant PNGs. */
+.ant-sprite,
 .aphid-herd {
   position: relative;
   display: block;
-  width: 55px;
-  height: 42px;
-  filter: drop-shadow(0 3px 2px rgba(0,0,0,.3));
+  width: 58px;
+  height: 44px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  filter: drop-shadow(0 3px 3px rgba(0,0,0,.35));
+  transform: none;
 }
-.aphid-herd.compact { transform: scale(.78); transform-origin: center; }
-.aphid-leaf {
-  position: absolute;
-  left: 5px;
-  top: 7px;
-  width: 44px;
-  height: 27px;
-  border: 2px solid #213d1b;
-  border-radius: 80% 16% 80% 18%;
-  transform: rotate(-9deg);
-  background: linear-gradient(150deg, #6ba83b, #3c7429 64%, #2b5b24);
+.ant-sprite.compact,
+.aphid-herd.compact {
+  width: 46px;
+  height: 36px;
+  transform: none;
 }
-.aphid-leaf::after {
-  content: '';
-  position: absolute;
-  width: 35px;
-  height: 2px;
-  left: 5px;
-  top: 13px;
-  background: rgba(219,236,156,.38);
-  transform: rotate(-8deg);
+.ant-sprite > *,
+.aphid-herd > * { display: none !important; }
+
+.aphid-herd { background-image: url('assets/sprites/resources/aphid_herd_leaf.png'); }
+.ant-woodant { background-image: url('assets/sprites/ants/wood_ant.png'); }
+.ant-major { background-image: url('assets/sprites/ants/major_soldier_ant.png'); }
+.ant-weaver { background-image: url('assets/sprites/ants/weaver_ant.png'); }
+.ant-fireant { background-image: url('assets/sprites/ants/fire_ant.png'); }
+.ant-trapjaw { background-image: url('assets/sprites/ants/trap_jaw_ant.png'); }
+
+.ant-card .top { min-height: 38px; }
+.ant-card .bug-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 38px;
+  overflow: visible;
 }
-.aphid {
-  position: absolute;
-  z-index: 3;
-  width: 9px;
-  height: 12px;
-  border: 1.5px solid #29351b;
-  border-radius: 52% 52% 44% 44%;
-  background: #b5cb58;
+.ant-card .cost { display: inline-flex; align-items: center; gap: 1px; }
+
+.entity.defender {
+  width: 11.5%;
+  height: 19%;
 }
-.aphid::before {
-  content: '';
-  position: absolute;
-  width: 5px;
-  height: 5px;
-  border: 1px solid #29351b;
-  border-radius: 50%;
-  background: #c8dc6d;
-  left: 1px;
-  top: -4px;
+.entity.defender .ant-sprite,
+.entity.defender .aphid-herd {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  transform: none;
 }
-.aphid.a1 { left: 14px; top: 12px; transform: rotate(-18deg); }
-.aphid.a2 { left: 28px; top: 16px; transform: rotate(12deg); }
-.aphid.a3 { left: 36px; top: 8px; transform: rotate(28deg); }
-.dew-bead {
+.entity.defender .aphid-herd { width: 108%; height: 108%; }
+
+/* Zombie PNGs are inserted by sprite-art.js. */
+.entity.zombie {
+  width: 12.5%;
+  height: 21%;
+}
+.zombie-sprite-holder {
+  display: block;
+  width: 100%;
+  height: 100%;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  filter: none !important;
+}
+.zombie-png-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  filter: drop-shadow(0 3px 3px rgba(0,0,0,.38));
+}
+.entity.zombie.zombie-art-brute { width: 14.5%; height: 23.5%; }
+.entity.zombie.zombie-art-runner { width: 11.5%; height: 19.5%; }
+.entity.slowed::after {
+  content: '🕸️';
   position: absolute;
+  right: -4px;
+  bottom: -4px;
+  font-size: clamp(12px, 3vw, 20px);
   z-index: 4;
-  right: 1px;
-  bottom: 1px;
-  width: 12px;
-  height: 15px;
-  border-radius: 65% 35% 62% 38%;
-  transform: rotate(38deg);
-  background: #e5c451;
-  border: 1px solid #734915;
-  box-shadow: inset 2px 2px 2px rgba(255,255,255,.35);
 }
 
-.ant-card .top { min-height: 34px; }
-.ant-card .bug-icon { display: grid; place-items: center; width: 44px; height: 32px; overflow: visible; }
-.ant-card .cost { display: inline-flex; align-items: center; gap: 1px; }
-.entity.defender .ant-sprite,
-.entity.defender .aphid-herd { transform: scale(clamp(.62, 1.5vw, 1)); transform-origin: center; }
-.entity.defender .ant-sprite { margin-left: 5px; }
-.entity.zombie .zombie-hat { position:absolute; top:-18%; font-size:42%; z-index:3; }
+/* Actual sprites on the title screen. */
+.hero-sprite {
+  width: clamp(50px, 14vw, 86px);
+  height: clamp(50px, 14vw, 86px);
+  object-fit: contain;
+  filter: drop-shadow(0 7px 6px rgba(0,0,0,.36));
+}
 
 .projectile.acid { background:#b4d55a; box-shadow:0 0 9px rgba(180,213,90,.75); }
 .projectile.silk { background:#e4efe0; box-shadow:0 0 8px rgba(228,239,224,.75); }
@@ -230,9 +151,13 @@
 .projectile.snap { background:#f1ce67; box-shadow:0 0 10px rgba(241,206,103,.8); transform:scale(1.35); }
 
 @media (max-width: 430px) {
-  .honeydew-drop { width: 48px; height: 48px; }
-  .honeydew-drop .drop-gem { width: 22px; height: 28px; }
-  .ant-card .bug-icon { transform: scale(.92); transform-origin: center; }
+  .honeydew-drop { width: 50px; height: 54px; }
+  .honeydew-drop .drop-gem { width: 27px; height: 34px; }
+  .ant-card .bug-icon { width: 44px; height: 34px; }
+  .ant-sprite.compact, .aphid-herd.compact { width: 42px; height: 33px; }
+  .entity.defender { width: 12%; height: 20%; }
+  .entity.zombie { width: 13.2%; height: 22%; }
+  .entity.zombie.zombie-art-brute { width: 15.2%; height: 24%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
