@@ -24,7 +24,7 @@
   const UNITS = {
     aphids: {
       name: 'Aphid Herd', cost: 50, hp: 120, cooldown: 4.5,
-      role: 'Produces Honeydew', kind: 'generator', rate: 6.6, amount: 35
+      role: 'Produces Honeydew', kind: 'generator', rate: 9.0, amount: 30
     },
     woodant: {
       name: 'Wood Ant', cost: 85, hp: 115, cooldown: 3.8,
@@ -32,7 +32,7 @@
     },
     major: {
       name: 'Major Soldier', cost: 100, hp: 470, cooldown: 7.0,
-      role: 'Heavy colony guard', kind: 'tank'
+      role: 'Heavy blocker — soaks damage', kind: 'tank'
     },
     weaver: {
       name: 'Weaver Ant', cost: 125, hp: 120, cooldown: 6.2,
@@ -214,7 +214,7 @@
     const row = Number(event.currentTarget.dataset.row);
     const col = Number(event.currentTarget.dataset.col);
     if (col === 0) {
-      showToast('Keep the first column clear for the colony gate.');
+      showToast('Keep the first column clear for the human refuge.');
       return;
     }
     if (state.defenders.some(defender => defender.row === row && defender.col === col && defender.hp > 0)) {
@@ -307,7 +307,7 @@
     state.wildAphidTimer -= dt;
     if (state.wildAphidTimer <= 0) {
       spawnHoneydew(10 + Math.random() * 26, 12 + Math.random() * 74, 20, 'wild');
-      state.wildAphidTimer = 7.5 + Math.random() * 2.2;
+      state.wildAphidTimer = 8.5 + Math.random() * 2.0;
     }
 
     state.drops.forEach(drop => { drop.life -= dt; });
@@ -340,6 +340,8 @@
         }
         continue;
       }
+
+      if (unit.kind === 'tank') continue;
 
       defender.attackTimer -= dt;
       const targets = state.zombies
@@ -400,7 +402,7 @@
         if (zombie.x <= 0.22) {
           zombie.hp = 0;
           state.hearts -= 1;
-          showToast('A zombie reached the colony gate!');
+          showToast('A zombie reached the human refuge!');
           tone(90, 0.16);
           if (state.hearts <= 0) endGame(false);
         }
@@ -560,10 +562,10 @@
     state.ended = true;
     state.running = false;
     document.getElementById('endIcon').textContent = won ? '🏆🐜' : '🪦🐜';
-    document.getElementById('endTitle').textContent = won ? 'Colony Saved!' : 'Colony Overrun';
+    document.getElementById('endTitle').textContent = won ? 'Humanity Saved!' : 'Refuge Overrun';
     document.getElementById('endText').textContent = won
-      ? `All ${FINAL_WAVE} waves cleared. The aphids are safe and the Honeydew keeps flowing.`
-      : 'The gate fell, but the colony is already demanding a rematch.';
+      ? `All ${FINAL_WAVE} waves cleared. The tiny human refuge is safe and the Honeydew keeps flowing.`
+      : 'The refuge fell, but the ants are already demanding a rematch.';
     endOverlay.classList.add('show');
     endOverlay.setAttribute('aria-hidden', 'false');
     tone(won ? 760 : 120, won ? 0.18 : 0.28);
