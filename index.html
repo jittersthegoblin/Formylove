@@ -5,56 +5,59 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#20301c" />
   <meta name="color-scheme" content="dark" />
-  <title>Bug Brigade: Graveyard Garden</title>
+  <title>Ants vs. Zombies</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="ants.css" />
 </head>
 <body>
   <main class="app">
     <section id="menu" class="screen active" aria-labelledby="game-title">
       <div class="title-card">
-        <div class="eyebrow">A tiny garden-defense game</div>
-        <h1 id="game-title">BUG<br>BRIGADE</h1>
-        <p class="subtitle">Defend the moonlit garden with a very small army of very determined bugs.</p>
-        <div class="hero-art" aria-hidden="true"><span>🐝</span><span>🪲</span><span class="versus">VS</span><span>🧟</span><span>🧟‍♂️</span></div>
-        <button id="startBtn" class="primary" type="button">Start the Night Shift</button>
-        <div class="no-shop"><strong>MICROTRANSACTIONS: 0</strong><span>All bugs have already been paid in snacks. ♡</span></div>
+        <div class="eyebrow">The colony needs you</div>
+        <h1 id="game-title">ANTS<br><span class="title-vs">VS.</span> ZOMBIES</h1>
+        <p class="subtitle">Raise an ant army, tend your aphids, harvest Honeydew, and keep the undead away from the colony.</p>
+        <div class="hero-art" aria-hidden="true">
+          <span class="hero-ant">🐜</span><span class="hero-ant">🐜</span><span class="versus">VS</span><span>🧟</span><span>🧟‍♂️</span>
+        </div>
+        <button id="startBtn" class="primary" type="button">Defend the Colony</button>
+        <div class="no-shop"><strong>MICROTRANSACTIONS: 0</strong><span>The colony economy is entirely aphid-based. ♡</span></div>
       </div>
     </section>
 
-    <section id="game" class="screen" aria-label="Bug Brigade game">
+    <section id="game" class="screen" aria-label="Ants versus Zombies game">
       <div class="hud">
         <div class="hud-left">
-          <div class="pill" aria-label="Nectar"><span aria-hidden="true">🍯</span> Nectar <span id="nectarValue" class="value">175</span></div>
-          <div class="pill" aria-label="Garden hearts"><span class="hearts" id="heartValue">❤️❤️❤️</span></div>
+          <div class="pill" aria-label="Honeydew"><span class="dew-icon" aria-hidden="true"></span> Honeydew <span id="nectarValue" class="value">175</span></div>
+          <div class="pill" aria-label="Colony defenses"><span class="hearts" id="heartValue">❤️❤️❤️</span></div>
           <div class="pill"><span aria-hidden="true">🌙</span> <span id="waveText">Wave 1/6</span></div>
         </div>
         <button id="pauseBtn" class="icon-btn" type="button" aria-label="Pause game">⏸️</button>
       </div>
 
       <div class="status-strip">
-        <strong id="statusText">Plant your first defender.</strong>
+        <strong id="statusText">Choose an ant, then tap a garden square.</strong>
         <div class="wave-meter" aria-label="Wave progress"><span id="waveFill"></span></div>
       </div>
 
       <div class="game-shell">
         <div id="boardWrap" class="board-wrap">
           <div class="fence" aria-hidden="true"></div>
-          <div id="board" class="board" role="grid" aria-label="5 by 8 garden defense grid"></div>
+          <div id="board" class="board" role="grid" aria-label="5 by 8 colony defense grid"></div>
           <div id="entities" aria-hidden="true"></div>
           <div id="drops"></div>
           <div id="toast" class="toast" role="status" aria-live="polite"></div>
           <div id="pauseOverlay" class="overlay" aria-hidden="true">
             <div class="overlay-card">
-              <div class="big">🐌💤</div>
+              <div class="big">🐜💤</div>
               <h2>Paused</h2>
-              <p>The bugs are taking a very union-approved break.</p>
-              <button id="resumeBtn" class="primary" type="button">Back to the Garden</button>
+              <p>The colony is taking a very union-approved break.</p>
+              <button id="resumeBtn" class="primary" type="button">Back to the Colony</button>
             </div>
           </div>
           <div id="endOverlay" class="overlay" aria-hidden="true">
             <div class="overlay-card">
               <div id="endIcon" class="big">🏆</div>
-              <h2 id="endTitle">Garden Saved!</h2>
+              <h2 id="endTitle">Colony Saved!</h2>
               <p id="endText">The night shift survived.</p>
               <div class="overlay-actions">
                 <button id="againBtn" class="primary" type="button">Play Again</button>
@@ -64,22 +67,12 @@
           </div>
         </div>
 
-        <div id="defenderBar" class="defender-bar" aria-label="Bug defenders"></div>
-        <div class="game-help"><span>1. Tap a bug card</span><span>2. Tap a garden square</span><span>3. Tap golden nectar drops</span></div>
+        <div id="defenderBar" class="defender-bar" aria-label="Ant defenders"></div>
+        <div class="game-help"><span>1. Tap an ant card</span><span>2. Tap a garden square</span><span>3. Tap Honeydew drops</span></div>
       </div>
     </section>
   </main>
 
   <script src="game.js"></script>
-  <script>
-    // Mobile tap fix: the current game renderer refreshes nectar buttons very often.
-    // Collect on pointer-down so Samsung/Android taps register before a button is refreshed.
-    document.getElementById('drops').addEventListener('pointerdown', function (event) {
-      const drop = event.target.closest('.nectar-drop');
-      if (!drop) return;
-      event.preventDefault();
-      drop.click();
-    }, { passive: false });
-  </script>
 </body>
 </html>
